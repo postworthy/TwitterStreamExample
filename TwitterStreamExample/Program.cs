@@ -12,22 +12,28 @@ namespace TwitterStreamExample
     {
         static void Main(string[] args)
         {
-            var request = OAuth.CreateSignedRequest(new Uri("https://stream.twitter.com/1.1/statuses/filter.json?delimited=length&track=twitter"));
+            if (args == null || args.Length == 0)
+            {
+                Console.WriteLine("Enter the text you would like to track:");
+                args = new[] { Console.ReadLine() };
+            }
+            var request = OAuth.CreateSignedRequest(new Uri("https://stream.twitter.com/1.1/statuses/filter.json?delimited=length&track=" + args[0]));
             using (var stream = request.GetResponse().GetResponseStream())
             using (var reader = new StreamReader(stream))
             {
                 var tweetCount = 0;
                 var failCount = 0;
+                var start = DateTime.Now;
                 while (stream.CanRead && !reader.EndOfStream)
                 {
                     var data = reader.ReadLine();
-                    if (data[0] == '{')
+                    if (!string.IsNullOrEmpty(data) && data[0] == '{')
                     {
                         try
                         {
                             var tweet = JsonConvert.DeserializeObject<Tweet>(data);
                             Console.Clear();
-                            Console.WriteLine("Tweets handled:\t" + (++tweetCount));
+                            Console.WriteLine("Tweets handled:\t{0}\t({1:0.##} t/s)",(++tweetCount), tweetCount / (DateTime.Now - start).TotalSeconds);
                             Console.WriteLine("Tweets failed:\t" + (failCount));
                         }
                         catch
