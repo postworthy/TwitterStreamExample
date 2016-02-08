@@ -75,6 +75,7 @@ namespace TwitterStreamExample
             }
 
             var hwr = (HttpWebRequest)WebRequest.Create(uri);
+            hwr.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             hwr.Headers.Add("Authorization",
                 CreateAuthorizationHeaderParameter(
                     uri.OriginalString.Split('?')[0],
