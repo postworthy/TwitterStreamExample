@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,13 +16,25 @@ namespace TwitterStreamExample
             using (var stream = request.GetResponse().GetResponseStream())
             using (var reader = new StreamReader(stream))
             {
-                while (!reader.EndOfStream)
+                var tweetCount = 0;
+                var failCount = 0;
+                while (stream.CanRead && !reader.EndOfStream)
                 {
                     var data = reader.ReadLine();
                     if (data[0] == '{')
                     {
-                        Console.WriteLine(data);
-                        return;
+                        try
+                        {
+                            var tweet = JsonConvert.DeserializeObject<Tweet>(data);
+                            Console.Clear();
+                            Console.WriteLine("Tweets handled:\t" + (++tweetCount));
+                            Console.WriteLine("Tweets failed:\t" + (failCount));
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Unhandled:" + data);
+                            failCount++;
+                        }
                     }
                 }
             }
